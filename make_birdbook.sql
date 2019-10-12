@@ -20,7 +20,7 @@ CREATE TABLE person (
   KEY idx_person_username (username)
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
-DELIMITER ;;
+
 -- CREATE TRIGGER tr_person_del ON person
 -- INSTEAD OF DELETE
 -- AS
@@ -39,24 +39,31 @@ DELIMITER ;;
 --     WHERE post_id IN (SELECT post_id FROM deleted)
 -- END
 
--- CREATE TRIGGER tr_person_del ON person
--- ON DELETE
--- AS BEGIN
--- 	UPDATE post
---     set deletedAt = "1900-01-01 00:00:00"
---     person INNER JOIN person_make_post USING (person_id)
---     INNER JOIN post USING (post_id)
+-- DELIMITER ;;
+-- CREATE TRIGGER tr_person_del BEFORE DELETE ON person FOR EACH ROW BEGIN
+-- 	UPDATE post as p
+--     INNER JOIN person_make_post AS m ON p.post_id =  m.post_id
+--     set p.deletedAt = "1900-01-01 00:00:00"
+--     post INNER JOIN person_make_post USING (post_id)
 --     WHERE person_id IN (SELECT person_id FROM deleted)
--- END
-CREATE TRIGGER tr_person_del ON person
-ON DELETE
-AS BEGIN
-	UPDATE post
-    set deletedAt = "1900-01-01 00:00:00"
-    WHERE title LIKE "titulo"
-END
+-- END;;
 
-DELIMITER ;;
+-- DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER del_per
+BEFORE DELETE ON person
+FOR EACH ROW
+BEGIN
+  SET @post_id = (select post_id from person inner join person_make_post using (person_id) inner join post using (post_id) where person_id = old.person_id);
+	UPDATE post 
+		SET post.deletedAt =  "1900-01-01 00:00:00"
+        WHERE post_id =@post_id;
+END//
+
+DELIMITER ;
+
 
 --
 -- Table structure for table `bird`
@@ -132,3 +139,5 @@ CREATE TABLE post_refere_bird (
   CONSTRAINT fk_post_refere_bird_birdname FOREIGN KEY (bird_name) REFERENCES bird (bird_name) ON DELETE RESTRICT ON UPDATE CASCADE
   
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
+
+
