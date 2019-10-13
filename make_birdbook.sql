@@ -51,19 +51,6 @@ CREATE TABLE person (
 -- DELIMITER ;
 
 
-DELIMITER //
-CREATE TRIGGER del_per
-BEFORE DELETE ON person
-FOR EACH ROW
-BEGIN
-  SET @post_id = (select post_id from person inner join person_make_post using (person_id) inner join post using (post_id) where person_id = old.person_id);
-	UPDATE post 
-		SET post.deletedAt =  "1900-01-01 00:00:00"
-        WHERE post_id =@post_id;
-END//
-
-DELIMITER ;
-
 
 --
 -- Table structure for table `bird`
@@ -96,17 +83,11 @@ CREATE TABLE post (
   url VARCHAR(45) ,
   content VARCHAR(255) NOT NULL,
   deletedAt datetime NULL,
+  username VARCHAR(45) NOT NULL,
   PRIMARY KEY  (post_id),
   KEY idx_post_title (title)
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
-CREATE TABLE person_make_post (
-  person_id SMALLINT UNSIGNED NOT NULL,
-  post_id SMALLINT UNSIGNED NOT NULL,
-  PRIMARY KEY  (person_id, post_id),
-  CONSTRAINT fk_person_make_post_postid FOREIGN KEY (post_id) REFERENCES post (post_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_person_make_post_personid FOREIGN KEY (person_id) REFERENCES person (person_id) ON DELETE CASCADE ON UPDATE CASCADE
-)ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 
 
