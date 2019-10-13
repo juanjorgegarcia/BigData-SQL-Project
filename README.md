@@ -1,2 +1,13 @@
-# Bigdata-p1
-First project of the Big Data course on Computer Engineering  at Insper
+# Social Network SQL Project
+Megadados - Insper
+
+Arthur Olga,
+Juan Garcia
+
+
+### Entity-Relationshop Model
+<img src="EntityRelationModel.png" >
+
+### Schema Model
+<img width="700px" src="Model.png" >
+
