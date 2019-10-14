@@ -37,6 +37,7 @@ CREATE TABLE bird (
 CREATE TABLE person_favorites_bird (
   person_id SMALLINT UNSIGNED NOT NULL,
   bird_name VARCHAR(45) NOT NULL,
+  deletedAt datetime NULL,
   PRIMARY KEY  (person_id,bird_name),
   CONSTRAINT fk_person_favorites_bird_birdname FOREIGN KEY (bird_name) REFERENCES bird (bird_name) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_person_favorites_bird_personid FOREIGN KEY (person_id) REFERENCES person (person_id) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -64,6 +65,7 @@ CREATE TABLE post (
 CREATE TABLE post_refere_person (
   post_id SMALLINT UNSIGNED NOT NULL,
   person_id SMALLINT UNSIGNED NOT NULL,
+  deletedAt datetime NULL,
   PRIMARY KEY  (post_id, person_id),
   CONSTRAINT fk_post_refere_person_personid FOREIGN KEY (person_id) REFERENCES person (person_id) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_post_refere_person_postid FOREIGN KEY (post_id) REFERENCES post (post_id) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -75,6 +77,7 @@ CREATE TABLE person_view_post (
   ip INT UNSIGNED NOT NULL,
   device VARCHAR(45) NOT NULL,
   browser VARCHAR(45) NOT NULL,
+  deletedAt datetime NULL,
   instant TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (person_id, post_id),
   CONSTRAINT fk_person_view_post_postid FOREIGN KEY (post_id) REFERENCES post (post_id) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -84,6 +87,7 @@ CREATE TABLE person_view_post (
 CREATE TABLE post_refere_bird (
   post_id SMALLINT UNSIGNED NOT NULL,
   bird_name VARCHAR(45) NOT NULL,
+  deletedAt datetime NULL,
   PRIMARY KEY  (post_id, bird_name),
   CONSTRAINT fk_post_refere_bird_postid FOREIGN KEY (post_id) REFERENCES post (post_id) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_post_refere_bird_birdname FOREIGN KEY (bird_name) REFERENCES bird (bird_name) ON DELETE RESTRICT ON UPDATE CASCADE

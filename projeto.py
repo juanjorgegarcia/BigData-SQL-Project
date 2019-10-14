@@ -80,7 +80,7 @@ def list_birds(conn):
 
 def add_bird_to_person(conn, person_id, bird_name):
     with conn.cursor() as cursor:
-        cursor.execute('INSERT INTO person_favorites_bird VALUES (%s, %s)',
+        cursor.execute('INSERT INTO person_favorites_bird (person_id, bird_name) VALUES (%s, %s)',
                        (person_id, bird_name))
 
 
@@ -129,6 +129,17 @@ def find_post(conn, post_id):
             return None
 
 
+def find_post_id(conn, post_name):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'SELECT post_id FROM post WHERE title = %s', (post_name))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+
 def find_active_post(conn, post_id):
     with conn.cursor() as cursor:
         cursor.execute(
@@ -140,19 +151,30 @@ def find_active_post(conn, post_id):
             return None
 
 
-def update_post(conn, post_id, key, value):
+def remove_post(conn, post_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            ' Update post SET post.deletedAt =  CURDATE() WHERE post_id=%s', (post_id))
+
+
+def update_post_title(conn, post_id, value):
     with conn.cursor() as cursor:
         try:
             cursor.execute(
-                'UPDATE postn SET %s=%s where post_id=%s', (key, value, post_id))
+                'UPDATE post SET title=%s where post_id=%s', (value, post_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
-                f'Não posso alterar a propriedade {key} do id {post_id} para {value} na tabela post')
+                f'Não posso alterar a propriedade title do id {post_id} para {value} na tabela post')
 
 
-def remove_post(conn, post_id):
+def update_post_content(conn, post_id, value):
     with conn.cursor() as cursor:
-        cursor.execute('DELETE FROM post WHERE post_id=%s', (post_id))
+        try:
+            cursor.execute(
+                'UPDATE post SET content=%s where post_id=%s', (value, post_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso alterar a propriedade content do id {post_id} para {value} na tabela post')
 
 
 def delete_post_from_person(conn, person_id, post_id):
@@ -186,3 +208,24 @@ def lists_persons_from_post(conn, post_id):
         res = cursor.fetchall()
         persons = tuple(x[0] for x in res)
         return persons
+
+
+def add_view(conn, person_id, post_id, ip, device, browser):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('INSERT INTO person_view_post (person_id, post_id, ip, device, browser) VALUES (%s,%s,%s,%s,%s)',
+                           (person_id, post_id, ip, device, browser))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso inserir {person_id, post_id, ip, device, browser} na tabela view')
+
+
+def find_view(conn, person_id, post_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'SELECT person_id, post_id FROM person_view_post WHERE post_id = %s AND person_id=%s', (post_id, person_id))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None

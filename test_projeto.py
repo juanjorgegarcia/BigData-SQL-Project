@@ -275,6 +275,96 @@ class TestProjeto(unittest.TestCase):
         res_active = lists_active_posts_of_person(conn, person_id)
         self.assertCountEqual(res, res_active)
 
+    def test_update_post(self):
+        conn = self.__class__.connection
+
+        username = 'juanpostador2'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        # Adiciona um person não existente.
+        add_person(conn, username, first_name, last_name, email, city)
+        person_id = find_person(conn, username)
+        add_post(conn, title="Post oi", url="asasasa",
+                 content="Oiiii", person_id=person_id)
+        add_post(conn, title="Post Tchau", url="asasaasasasa",
+                 content="Oiziii", person_id=person_id)
+        id_posts = []
+        id_posts.append(find_post_id(conn, "Post oi"))
+        id_posts.append(find_post_id(conn, "Post Tchau"))
+
+        update_post_title(conn, id_posts[0], "Post oiee")
+        update_post_title(conn, id_posts[1], "Post tchaaau")
+
+        posts_after = []
+        posts_after.append(find_post(conn, id_posts[0]))
+        posts_after.append(find_post(conn, id_posts[1]))
+        self.assertCountEqual(id_posts, posts_after)
+
+    def test_remove_post(self):
+        conn = self.__class__.connection
+
+        username = 'juanpostador3'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        # Adiciona um person não existente.
+        add_person(conn, username, first_name, last_name, email, city)
+        person_id = find_person(conn, username)
+        add_post(conn, title="post1", url="asasasa",
+                 content="Oiiii", person_id=person_id)
+        id_posts = []
+        id_posts.append(find_post_id(conn, "post1"))
+
+        # Remove o post - logicamente
+        remove_post(conn, id_posts[0])
+
+        posts_after = []
+        posts_after.append(find_post_id(conn, "post1"))
+
+        # Cjeca se o post esta activo, se n estiver, retorna null
+        if(find_active_post(conn, id_posts[0])):
+            self.fail('Nao deveria ter aparecido o post, pq ele foi deletado')
+
+        # Testa se o delete foi logico mesmo
+        self.assertCountEqual(id_posts, posts_after)
+
+    def test_view(self):
+        conn = self.__class__.connection
+
+        username = 'juanjorge2'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        add_person(conn, username, first_name, last_name, email, city)
+
+        username2 = 'arthurqmo2'
+        first_name2 = 'arthur'
+        last_name2 = 'folga'
+        email2 = 'arthurqmo@al.insper.edu.br'
+        city2 = 'sao paulo'
+
+        add_person(conn, username2, first_name2, last_name2, email2, city2)
+
+        poster_id = find_person(conn, username2)
+        viewer_id = find_person(conn, username)
+
+        add_post(conn, title="post do arthur", url="asasasa",
+                 content="Oiiii", person_id=poster_id)
+
+        add_view(conn, viewer_id, find_post_id(
+            conn, "post do arthur"), "19221212", "Samsung", "Chrome")
+
+        if(not find_view(conn, viewer_id, find_post_id(
+                conn, "post do arthur"))):
+            self.fail('View n criada')
+
 
 def run_sql_script(filename):
     global config
