@@ -15,42 +15,11 @@ CREATE TABLE person (
   last_name VARCHAR(45) NOT NULL,
   email VARCHAR(255) NOT NULL,
   city VARCHAR(45) NOT NULL,
+  is_deleted TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY  (person_id),
   UNIQUE KEY(username),
   KEY idx_person_username (username)
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-
--- CREATE TRIGGER tr_person_del ON person
--- INSTEAD OF DELETE
--- AS
--- BEGIN
---     UPDATE person
---     SET deletedAt = GETDATE()
---     WHERE person_id IN (SELECT person_id FROM deleted)
--- END
-
--- CREATE TRIGGER tr_post_del ON post
--- INSTEAD OF DELETE
--- AS
--- BEGIN
---     UPDATE post
---     SET deletedAt = GETDATE()
---     WHERE post_id IN (SELECT post_id FROM deleted)
--- END
-
--- DELIMITER ;;
--- CREATE TRIGGER tr_person_del BEFORE DELETE ON person FOR EACH ROW BEGIN
--- 	UPDATE post as p
---     INNER JOIN person_make_post AS m ON p.post_id =  m.post_id
---     set p.deletedAt = "1900-01-01 00:00:00"
---     post INNER JOIN person_make_post USING (post_id)
---     WHERE person_id IN (SELECT person_id FROM deleted)
--- END;;
-
--- DELIMITER ;
-
-
 
 --
 -- Table structure for table `bird`
@@ -83,8 +52,8 @@ CREATE TABLE post (
   url VARCHAR(45) ,
   content VARCHAR(255) NOT NULL,
   deletedAt datetime NULL,
-  username VARCHAR(45) NOT NULL,
-  PRIMARY KEY  (post_id),
+  person_id SMALLINT UNSIGNED NOT NULL,
+  PRIMARY KEY  (post_id,person_id),
   KEY idx_post_title (title)
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 

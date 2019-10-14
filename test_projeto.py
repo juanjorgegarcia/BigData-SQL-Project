@@ -74,11 +74,12 @@ class TestProjeto(unittest.TestCase):
 
         add_person(conn, username, first_name, last_name, email, city)
 
+        # Recebee o id da pessoa
         person_id = find_person(conn, username)
 
         res = list_persons(conn)
         self.assertCountEqual(res, (person_id,))
-
+        # Remove a pessoa
         remove_person(conn, person_id)
 
         res = list_persons(conn)
@@ -125,14 +126,14 @@ class TestProjeto(unittest.TestCase):
         self.assertFalse(res)
 
         # Adiciona alguns persons.
-        persons = ({'username': 'juanjg', 'first_name': 'juan', 'last_name': 'jorge garcia', 'email': 'juanjg@al.insper.edu.br', 'city': 'rp'},
-                   {'username': 'arthurqmo', 'first_name': 'arthur', 'last_name': 'folga', 'email': 'arthurqmo@al.insper.edu.br', 'city': 'sp'})
+        persons = [{'username': 'juanjg', 'first_name': 'juan', 'last_name': 'jorge garcia', 'email': 'juanjg@al.insper.edu.br', 'city': 'rp'},
+                   {'username': 'arthurqmo', 'first_name': 'arthur', 'last_name': 'folga', 'email': 'arthurqmo@al.insper.edu.br', 'city': 'sp'}]
         persons_id = []
 
         for p in persons:
-            add_person(conn, p.username, p.first_name,
-                       p.last_name, p.email, p.city)
-            persons_id.append(find_person(conn, p.username))
+            add_person(conn, p["username"], p["first_name"],
+                       p["last_name"], p["email"], p["city"])
+            persons_id.append(find_person(conn, p["username"]))
 
         # Verifica se os persons foram adicionados corretamente.
         res = list_persons(conn)
@@ -182,23 +183,6 @@ class TestProjeto(unittest.TestCase):
         res = list_birds(conn)
         self.assertFalse(res)
 
-    def test_muda_nome_bird(self):
-        conn = self.__class__.connection
-
-        add_bird(conn, 'alface')
-        add_bird(conn, 'tomate')
-        id = find_bird(conn, 'tomate')
-
-        # Tenta mudar nome para algum nome já existente.
-        try:
-            muda_nome_bird(conn, id, 'alface')
-            self.fail('Não deveria ter mudado o nome.')
-        except ValueError as e:
-            pass
-
-        # Tenta mudar nome para nome inexistente.
-        muda_nome_bird(conn, id, 'azeitona')
-
     def test_list_birds(self):
         conn = self.__class__.connection
 
@@ -229,74 +213,47 @@ class TestProjeto(unittest.TestCase):
         conn = self.__class__.connection
 
         # Cria algumas birds.
-        add_bird(conn, 'coxinha')
-        id_coxinha = find_bird(conn, 'coxinha')
+        # add_bird(conn, 'coxinha')
+        # id_coxinha = find_bird(conn, 'coxinha')
 
-        add_bird(conn, 'kibe')
-        id_kibe = find_bird(conn, 'kibe')
+        # add_bird(conn, 'kibe')
+        # id_kibe = find_bird(conn, 'kibe')
+        birds = [{'bird_name': 'canario'}, {'bird_name': 'cacatua'}]
+        birds_names = []
+        for b in birds:
+            add_bird(conn, b["bird_name"])
+            birds_names.append(find_bird(conn, b["bird_name"]))
 
         # Cria alguns persons.
-        add_person(conn, 'estomacal')
-        id_estomacal = find_person(conn, 'estomacal')
+        persons = [{'username': 'juanito', 'first_name': 'juan', 'last_name': 'jorge garcia', 'email': 'juanjg@al.insper.edu.br', 'city': 'rp'},
+                   {'username': 'arthurolga', 'first_name': 'arthur', 'last_name': 'folga', 'email': 'arthurqmo@al.insper.edu.br', 'city': 'sp'}]
+        persons_id = []
 
-        add_person(conn, 'moral')
-        id_moral = find_person(conn, 'moral')
-
-        add_person(conn, 'emocional')
-        id_emocional = find_person(conn, 'emocional')
-
-        add_person(conn, 'viral')
-        id_viral = find_person(conn, 'viral')
-
-        # Conecta birds e persons.
-        add_person_a_bird(conn, id_estomacal, id_coxinha)
-        add_person_a_bird(conn, id_estomacal, id_kibe)
-        add_person_a_bird(conn, id_viral, id_coxinha)
-        add_person_a_bird(conn, id_viral, id_kibe)
-        add_person_a_bird(conn, id_moral, id_coxinha)
-        add_person_a_bird(conn, id_emocional, id_kibe)
-
-        res = list_birds_de_person(conn, id_estomacal)
-        self.assertCountEqual(res, (id_coxinha, id_kibe))
-
-        res = list_birds_de_person(conn, id_viral)
-        self.assertCountEqual(res, (id_coxinha, id_kibe))
-
-        res = list_birds_de_person(conn, id_moral)
-        self.assertCountEqual(res, (id_coxinha,))
-
-        res = list_birds_de_person(conn, id_emocional)
-        self.assertCountEqual(res, (id_kibe,))
-
-        res = list_persons_de_bird(conn, id_coxinha)
-        self.assertCountEqual(res, (id_estomacal, id_viral, id_moral))
-
-        res = list_persons_de_bird(conn, id_kibe)
-        self.assertCountEqual(res, (id_estomacal, id_viral, id_emocional))
-
-        # Testa se a remoção de uma bird causa a remoção das relações entre essa bird e seus persons.
-        remove_bird(conn, id_kibe)
-
-        res = list_birds_de_person(conn, id_estomacal)
-        self.assertCountEqual(res, (id_coxinha,))
-
-        res = list_birds_de_person(conn, id_viral)
-        self.assertCountEqual(res, (id_coxinha,))
-
-        res = list_birds_de_person(conn, id_emocional)
-        self.assertFalse(res)
+        for p in persons:
+            add_person(conn, p["username"], p["first_name"],
+                       p["last_name"], p["email"], p["city"])
+            p_id = find_person(conn, p["username"])
+            persons_id.append(p_id)
+            # Conecta birds e persons.
+            for i in range(len(birds_names)):
+                add_bird_to_person(conn, p_id, birds_names[i])
+            res = lists_birds_of_person(conn, p_id)
+            self.assertCountEqual(res, birds_names)
 
         # Testa se a remoção de um person causa a remoção das relações entre esse person e suas birds.
-        remove_person(conn, id_viral)
+        # remove_person(conn, id_viral)
 
-        res = list_persons_de_bird(conn, id_coxinha)
-        self.assertCountEqual(res, (id_estomacal, id_moral))
+        res = lists_persons_of_bird(conn, birds_names[0])
+        self.assertCountEqual(res, persons_id)
 
-        # Testa a remoção específica de uma relação bird-person.
-        remove_person_de_bird(conn, id_estomacal, id_coxinha)
+        res = lists_persons_of_bird(conn, birds_names[i])
+        self.assertCountEqual(res, persons_id)
 
-        res = list_persons_de_bird(conn, id_coxinha)
-        self.assertCountEqual(res, (id_moral,))
+        # # Testa a remoção específica de uma relação bird-person.
+        # remove_person_de_bird(conn, id_estomacal, id_coxinha)
+
+        # res = list_persons_de_bird(conn, id_coxinha)
+        # self.assertCountEqual(res, (id_moral,))
 
 
 def run_sql_script(filename):

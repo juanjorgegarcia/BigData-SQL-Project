@@ -69,16 +69,6 @@ def remove_bird(conn, bird_name):
         cursor.execute('DELETE FROM bird WHERE bird_name=%s', (bird_name))
 
 
-# def update_bird(conn, id, name):
-#     with conn.cursor() as cursor:
-#         try:
-#             cursor.execute(
-#                 'UPDATE bird SET nome=%s where id=%s', (novo_nome, id))
-#         except pymysql.err.IntegrityError as e:
-#             raise ValueError(
-#                 f'Não posso alterar nome do id {id} para {novo_nome} na tabela bird')
-
-
 def list_birds(conn):
     with conn.cursor() as cursor:
         cursor.execute('SELECT bird_name from bird')
