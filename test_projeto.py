@@ -85,10 +85,10 @@ class TestProjeto(unittest.TestCase):
         res = list_persons(conn)
         self.assertFalse(res)
 
-    def test_muda_nome_person(self):
+    def test_update_person(self):
         conn = self.__class__.connection
 
-        username = 'juanjg'
+        username = 'juanjorge1'
         first_name = 'juan'
         last_name = 'jorge garcia'
         email = 'juanjg@al.insper.edu.br'
@@ -96,24 +96,24 @@ class TestProjeto(unittest.TestCase):
 
         add_person(conn, username, first_name, last_name, email, city)
 
-        username2 = 'arthurqmo'
+        username2 = 'arthurqmo1'
         first_name2 = 'arthur'
         last_name2 = 'folga'
         email2 = 'arthurqmo@al.insper.edu.br'
         city2 = 'sao paulo'
 
-        add_person(conn, username, first_name2, last_name2, email2, city2)
+        add_person(conn, username2, first_name2, last_name2, email2, city2)
         person_id = find_person(conn, username2)
 
         # Tenta mudar nome para algum nome já existente.
         try:
-            update_person(conn, person_id, 'username', 'juanjg')
+            update_person_username(conn, person_id, 'juanjorge1')
             self.fail('Não deveria ter mudado o nome.')
         except ValueError as e:
             pass
 
         # Tenta mudar nome para nome inexistente.
-        update_person(conn, person_id, 'username', 'jjautenticado')
+        update_person_username(conn, person_id,  'jjautenticado')
         # Verifica se mudou.
         id_novo = find_person(conn, 'jjautenticado')
         self.assertEqual(person_id, id_novo)
@@ -254,6 +254,26 @@ class TestProjeto(unittest.TestCase):
 
         # res = list_persons_de_bird(conn, id_coxinha)
         # self.assertCountEqual(res, (id_moral,))
+
+    def test_add_post(self):
+        conn = self.__class__.connection
+
+        username = 'juanpostador'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        # Adiciona um person não existente.
+        add_person(conn, username, first_name, last_name, email, city)
+        person_id = find_person(conn, username)
+        add_post(conn, title="Meu primeiro post", url="asasasa",
+                 content="Oiiii", person_id=person_id)
+        add_post(conn, title="Meu segundo post", url="asasaasasasa",
+                 content="Oiziii", person_id=person_id)
+        res = lists_posts_of_person(conn, person_id)
+        res_active = lists_active_posts_of_person(conn, person_id)
+        self.assertCountEqual(res, res_active)
 
 
 def run_sql_script(filename):

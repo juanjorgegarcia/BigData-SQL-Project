@@ -22,24 +22,25 @@ def find_person(conn, username):
             return None
 
 
-def update_person(conn, person_id, key, value):
+def update_person_username(conn, person_id, value):
     with conn.cursor() as cursor:
         try:
             cursor.execute(
-                'UPDATE person SET %s=%s where person_id=%s', (key, value, person_id))
+                'UPDATE person SET username=%s where person_id=%s', (value, person_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
-                f'Não posso alterar a propriedade {key} do id {person_id} para {value} na tabela person')
+                f'Não posso alterar a propriedade username do id {person_id} para {value} na tabela person')
 
 
 def remove_person(conn, person_id):
     with conn.cursor() as cursor:
-        cursor.execute('DELETE FROM person WHERE person_id=%s', (person_id))
+        cursor.execute(
+            'update person SET is_deleted = 1 where person_id=%s', (person_id))
 
 
 def list_persons(conn):
     with conn.cursor() as cursor:
-        cursor.execute('SELECT person_id from person')
+        cursor.execute('SELECT person_id from person WHERE is_deleted =0')
         res = cursor.fetchall()
         persons = tuple(x[0] for x in res)
         return persons
@@ -107,11 +108,11 @@ def lists_persons_of_bird(conn, bird_name):
         return persons
 
 
-def add_post(conn, title, url, content, deleted_at):
+def add_post(conn, title, url, content, person_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('INSERT INTO post (title, url, content) VALUES (%s,%s,%s)',
-                           (title, url, content))
+            cursor.execute('INSERT INTO post (title, url, content, person_id) VALUES (%s,%s,%s,%s)',
+                           (title, url, content, person_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
                 f'Não posso inserir {title, url, content} na tabela post')
@@ -121,6 +122,17 @@ def find_post(conn, post_id):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT post_id FROM post WHERE post_id = %s', (post_id))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+
+def find_active_post(conn, post_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'SELECT post_id FROM post WHERE post_id = %s AND deletedAt IS NULL', (post_id))
         res = cursor.fetchone()
         if res:
             return res[0]
@@ -143,12 +155,6 @@ def remove_post(conn, post_id):
         cursor.execute('DELETE FROM post WHERE post_id=%s', (post_id))
 
 
-def add_post_to_person(conn, person_id, post_id):
-    with conn.cursor() as cursor:
-        cursor.execute('INSERT INTO person_make_post VALUES (%s, %s)',
-                       (person_id, post_id))
-
-
 def delete_post_from_person(conn, person_id, post_id):
     with conn.cursor() as cursor:
         cursor.execute(
@@ -158,7 +164,16 @@ def delete_post_from_person(conn, person_id, post_id):
 def lists_posts_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
-            'SELECT post_id FROM person_make_post WHERE person_id=%s', (person_id))
+            'SELECT post_id FROM post WHERE person_id=%s', (person_id))
+        res = cursor.fetchall()
+        posts = tuple(x[0] for x in res)
+        return posts
+
+
+def lists_active_posts_of_person(conn, person_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'SELECT post_id FROM post WHERE person_id=%s AND deletedAt IS NULL', (person_id))
         res = cursor.fetchall()
         posts = tuple(x[0] for x in res)
         return posts
