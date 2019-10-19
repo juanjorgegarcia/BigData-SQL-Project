@@ -14,6 +14,6 @@ Juan Garcia
 ### API
 To run the API server:
 ```
-hypercorn server:ap --reload
+hypercorn server:app --reload
 ```
 
