@@ -33,17 +33,22 @@ def update_person_username(conn, person_id, value):
 
 
 def remove_person(conn, person_id):
+
     with conn.cursor() as cursor:
-        cursor.execute(
-            'update person SET is_deleted = 1 where person_id=%s', (person_id))
+        try:
+            cursor.execute(
+                'UPDATE person SET is_deleted = 1 WHERE person_id=%s', (person_id))
+        except pymysql.err.IntegrityError as e:
+            print(e)
+            raise ValueError(
+                f'Não posso remover a pessoa com o id{person_id} na tabela person')
 
 
 def list_persons(conn):
     with conn.cursor() as cursor:
-        cursor.execute('SELECT person_id from person WHERE is_deleted =0')
+        cursor.execute('SELECT * from person WHERE is_deleted = 0')
         res = cursor.fetchall()
-        persons = tuple(x[0] for x in res)
-        return persons
+        return res
 
 
 def add_bird(conn, name):
@@ -129,6 +134,13 @@ def find_post(conn, post_id):
             return None
 
 
+def list_posts(conn):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * from post WHERE deletedAt is NULL')
+        res = cursor.fetchall()
+        return res
+
+
 def find_post_id(conn, post_name):
     with conn.cursor() as cursor:
         cursor.execute(
@@ -171,7 +183,7 @@ def update_post_content(conn, post_id, value):
     with conn.cursor() as cursor:
         try:
             cursor.execute(
-                'UPDATE post SET content=%s where post_id=%s', (value, post_id))
+                'UPDATE post SET content=%s WHERE post_id=%s', (value, post_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
                 f'Não posso alterar a propriedade content do id {post_id} para {value} na tabela post')
@@ -194,7 +206,7 @@ def list_posts_of_person(conn, person_id):
 def list_active_posts_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
-            'SELECT * FROM post WHERE person_id=%s AND deletedAt IS NULL', (person_id))
+            'SELECT * FROM post WHERE person_id=%s AND deletedAt IS NULL ORDER BY (post_id) DESC', (person_id))
         res = cursor.fetchall()
         return res
 
@@ -318,7 +330,7 @@ def find_person_vote_post(conn, post_id, person_id):
 def list_all_votes_of_post(conn, post_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('SELECT * FROM person_vote_post WHERE deletedAt is NULL and post_id = %s ',
+            cursor.execute('SELECT * FROM personf_vote_post WHERE deletedAt is NULL and post_id = %s ',
                            (post_id))
             res = cursor.fetchall()
             return res
@@ -348,6 +360,16 @@ def add_person_comment_post(conn, post_id, person_id, comment):
         except pymysql.err.IntegrityError as e:
             raise ValueError(
                 f'Não posso inserir {post_id, person_id, comment} na tabela person_comment_person')
+
+
+def update_person_comment_post(conn, post_id, person_id, comment):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE person_comment_post SET comment = %s WHERE post_id = %s and person_id = %s ',
+                           (comment, post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso atualizar o comentario do usuario: {person_id} para: {comment} no post: {post_id} na tabela person_comment_post')
 
 
 def remove_person_comment_post(conn, post_id, person_id):
