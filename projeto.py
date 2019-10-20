@@ -297,10 +297,20 @@ def add_person_comment_post(conn, post_id, person_id, comment):
                 f'Não posso inserir {post_id, person_id, comment} na tabela person_comment_person')
 
 
+def update_person_comment_post(conn, post_id, person_id, comment):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE person_comment_post SET comment = %s WHERE post_id = %s and person_id = %s ',
+                           (comment, post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso atualizar o comentario do usuario: {person_id} para: {comment} no post: {post_id} na tabela person_comment_post')
+
+
 def remove_person_comment_post(conn, post_id, person_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('UPDATE person_comment_post SET deletedAt = CURDATE(), WHERE post_id = %s and person_id = %s ',
+            cursor.execute('UPDATE person_comment_post SET deletedAt = CURDATE() WHERE post_id = %s and person_id = %s ',
                            (post_id, person_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
