@@ -330,7 +330,7 @@ def find_person_vote_post(conn, post_id, person_id):
 def list_all_votes_of_post(conn, post_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('SELECT * FROM personf_vote_post WHERE deletedAt is NULL and post_id = %s ',
+            cursor.execute('SELECT * FROM person_vote_post WHERE deletedAt is NULL and post_id = %s ',
                            (post_id))
             res = cursor.fetchall()
             return res

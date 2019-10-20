@@ -78,7 +78,7 @@ class TestProjeto(unittest.TestCase):
         person_id = find_person(conn, username)
 
         res = list_persons(conn)
-        self.assertCountEqual(res, (person_id,))
+        self.assertEqual(len(res), 1)
         # Remove a pessoa
         remove_person(conn, person_id)
 
@@ -137,7 +137,7 @@ class TestProjeto(unittest.TestCase):
 
         # Verifica se os persons foram adicionados corretamente.
         res = list_persons(conn)
-        self.assertCountEqual(res, persons_id)
+        self.assertEqual(len(res), len(persons))
 
         # Remove os persons.
         for p in persons_id:
