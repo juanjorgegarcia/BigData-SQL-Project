@@ -11,3 +11,9 @@ Juan Garcia
 ### Schema Model
 <img width="700px" src="Model.png" >
 
+### API
+To run the API server:
+```
+hypercorn server:app --reload
+```
+
