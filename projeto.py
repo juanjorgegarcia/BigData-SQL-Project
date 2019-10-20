@@ -90,7 +90,7 @@ def delete_bird_of_person(conn, person_id, bird_name):
             'DELETE FROM person_favorites_bird WHERE person_id=%s AND bird_name=%s', (person_id, bird_name))
 
 
-def lists_birds_of_person(conn, person_id):
+def list_birds_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT bird_name FROM person_favorites_bird WHERE person_id=%s', (person_id))
@@ -99,7 +99,7 @@ def lists_birds_of_person(conn, person_id):
         return birds
 
 
-def lists_persons_of_bird(conn, bird_name):
+def list_persons_of_bird(conn, bird_name):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT person_id FROM person_favorites_bird WHERE bird_name=%s', (bird_name))
@@ -183,25 +183,23 @@ def delete_post_from_person(conn, person_id, post_id):
             'DELETE FROM person_make_post WHERE person_id=%s AND post_id=%s', (person_id, post_id))
 
 
-def lists_posts_of_person(conn, person_id):
+def list_posts_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
-            'SELECT post_id FROM post WHERE person_id=%s', (person_id))
+            'SELECT * FROM post WHERE person_id=%s', (person_id))
         res = cursor.fetchall()
-        posts = tuple(x[0] for x in res)
-        return posts
+        return res
 
 
-def lists_active_posts_of_person(conn, person_id):
+def list_active_posts_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
-            'SELECT post_id FROM post WHERE person_id=%s AND deletedAt IS NULL', (person_id))
+            'SELECT * FROM post WHERE person_id=%s AND deletedAt IS NULL', (person_id))
         res = cursor.fetchall()
-        posts = tuple(x[0] for x in res)
-        return posts
+        return res
 
 
-def lists_persons_from_post(conn, post_id):
+def list_persons_from_post(conn, post_id):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT person_id FROM person_make_post WHERE post_id=%s', (post_id))
@@ -275,6 +273,73 @@ def list_all_references_post(conn, post_id):
                 f'Não posso listar todas as referencias do post: {post_id} na tabela post_refere_person')
 
 
+def add_person_vote_post(conn, post_id, person_id, liked):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('INSERT INTO person_vote_post (post_id ,person_id, liked) VALUES (%s,%s,%s)',
+                           (post_id, person_id, liked))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso inserir {post_id, person_id, liked} na tabela person_vote_person')
+
+
+def remove_person_vote_post(conn, post_id, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE person_vote_post SET deletedAt = CURDATE(), WHERE post_id = %s and person_id = %s ',
+                           (post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso remover o vote: {post_id, person_id} na tabela person_vote_post')
+
+
+def update_person_vote_post(conn, post_id, person_id, liked):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE person_vote_post SET liked = %s WHERE post_id = %s and person_id = %s ',
+                           (liked, post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso remover o vote: {post_id, person_id} na tabela person_vote_post')
+
+
+def find_person_vote_post(conn, post_id, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT liked FROM person_vote_post WHERE post_id = %s and person_id = %s',
+                           (post_id, person_id))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso achar o vote: {post_id, person_id} na tabela person_vote_post')
+
+
+def list_all_votes_of_post(conn, post_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM person_vote_post WHERE deletedAt is NULL and post_id = %s ',
+                           (post_id))
+            res = cursor.fetchall()
+            return res
+
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os votes do post: {post_id} na tabela person_vote_post')
+
+
+def list_all_votes_of_person(conn, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM person_vote_post WHERE deletedAt is NULL and person_id = %s ',
+                           (person_id))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os votes da pessoa: {person_id} na tabela person_vote_post')
+
+
 def add_person_comment_post(conn, post_id, person_id, comment):
     with conn.cursor() as cursor:
         try:
@@ -288,7 +353,7 @@ def add_person_comment_post(conn, post_id, person_id, comment):
 def remove_person_comment_post(conn, post_id, person_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('UPDATE person_comment_post SET deletedAt = CURDATE(), WHERE post_id = %s and person_id = %s ',
+            cursor.execute('UPDATE person_comment_post SET deletedAt = CURDATE() WHERE post_id = %s and person_id = %s ',
                            (post_id, person_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
@@ -377,11 +442,10 @@ def parser(character, text):
 def parse_and_refere(conn, content, post_id):
     users_refered = parser("@", content)
     birds_refered = parser("#", content)
+
     for u in users_refered:
-        _id = find_person(conn, u)
+        _id = find_person(conn, u[1:])
         add_post_refere_person(conn, post_id, _id)
-        print(u[1:])
 
     for b in birds_refered:
-        add_post_refere_bird(conn, post_id, b)
-        print(b[1:])
+        add_post_refere_bird(conn, post_id, b[1:])

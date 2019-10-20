@@ -237,16 +237,16 @@ class TestProjeto(unittest.TestCase):
             # Conecta birds e persons.
             for i in range(len(birds_names)):
                 add_bird_to_person(conn, p_id, birds_names[i])
-            res = lists_birds_of_person(conn, p_id)
+            res = list_birds_of_person(conn, p_id)
             self.assertCountEqual(res, birds_names)
 
         # Testa se a remoção de um person causa a remoção das relações entre esse person e suas birds.
         # remove_person(conn, id_viral)
 
-        res = lists_persons_of_bird(conn, birds_names[0])
+        res = list_persons_of_bird(conn, birds_names[0])
         self.assertCountEqual(res, persons_id)
 
-        res = lists_persons_of_bird(conn, birds_names[i])
+        res = list_persons_of_bird(conn, birds_names[i])
         self.assertCountEqual(res, persons_id)
 
         # # Testa a remoção específica de uma relação bird-person.
@@ -271,8 +271,8 @@ class TestProjeto(unittest.TestCase):
                  content="Oiiii", person_id=person_id)
         add_post(conn, title="Meu segundo post", url="asasaasasasa",
                  content="Oiziii", person_id=person_id)
-        res = lists_posts_of_person(conn, person_id)
-        res_active = lists_active_posts_of_person(conn, person_id)
+        res = list_posts_of_person(conn, person_id)
+        res_active = list_active_posts_of_person(conn, person_id)
         self.assertCountEqual(res, res_active)
 
     def test_update_post(self):
@@ -427,6 +427,119 @@ class TestProjeto(unittest.TestCase):
         self.assertEqual(
             len(list_all_bird_references_of_post(conn, id_post)), 0)
 
+    def test_parser(self):
+        conn = self.__class__.connection
+        username = 'juanjorge5'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        add_person(conn, username, first_name, last_name, email, city)
+
+        username2 = 'arthurqmo5'
+        first_name2 = 'arthur'
+        last_name2 = 'folga'
+        email2 = 'arthurqmo@al.insper.edu.br'
+        city2 = 'sao paulo'
+
+        add_person(conn, username2, first_name2, last_name2, email2, city2)
+
+        person_id = find_person(conn, username)
+
+        add_bird(conn, "papagaio")
+
+        add_post(conn, title="Adoro papagaio", url="asasasa",
+                 content="meu passaro favorito é o #papagaio @arthurqmo5", person_id=person_id)
+        id_post = find_post_id(conn, "Adoro papagaio")
+        parse_and_refere(
+            conn, "meu passaro favorito é o #papagaio @arthurqmo5", id_post)
+
+        referencia_bird = list_all_bird_references_of_post(conn, id_post)
+        referencia_person = list_all_references_post(conn, id_post)
+        self.assertEqual(len(referencia_bird), len(referencia_person))
+
+    def test_vote(self):
+        conn = self.__class__.connection
+
+        username = 'juanjorge6'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        add_person(conn, username, first_name, last_name, email, city)
+
+        username2 = 'arthurqmo6'
+        first_name2 = 'arthur'
+        last_name2 = 'folga'
+        email2 = 'arthurqmo@al.insper.edu.br'
+        city2 = 'sao paulo'
+
+        add_person(conn, username2, first_name2, last_name2, email2, city2)
+
+        poster_id = find_person(conn, username2)
+        viewer_id = find_person(conn, username)
+
+        add_post(conn, title="Passaros sao insanos", url="asasasa",
+                 content="Oiiii", person_id=poster_id)
+
+        id_post = find_post_id(conn, "Passaros sao insanos")
+        add_view(conn, viewer_id, id_post, "19221212", "Samsung", "Chrome")
+
+        add_person_vote_post(conn, id_post, viewer_id, 1)  # Deu like
+
+        lp = list_all_votes_of_post(conn, id_post)
+        lu = list_all_votes_of_person(conn, viewer_id)
+
+        self.assertCountEqual(lp, lu)
+
+        update_person_vote_post(conn, id_post, viewer_id, 0)
+
+        voto = find_person_vote_post(conn, id_post, viewer_id)
+        self.assertEqual(0, voto[0][0])  # Checa se o voto é zero
+
+    def test_comment(self):
+        conn = self.__class__.connection
+
+        username = 'juanjorge7'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        add_person(conn, username, first_name, last_name, email, city)
+
+        username2 = 'arthurqmo7'
+        first_name2 = 'arthur'
+        last_name2 = 'folga'
+        email2 = 'arthurqmo@al.insper.edu.br'
+        city2 = 'sao paulo'
+
+        add_person(conn, username2, first_name2, last_name2, email2, city2)
+
+        poster_id = find_person(conn, username2)
+        viewer_id = find_person(conn, username)
+
+        add_post(conn, title="Passaros sao muito insanos", url="asasasa",
+                 content="Oiiii", person_id=poster_id)
+
+        id_post = find_post_id(conn, "Passaros sao muito insanos")
+        add_view(conn, viewer_id, id_post, "19221212", "Samsung", "Chrome")
+
+        add_person_comment_post(conn, id_post, viewer_id,
+                                "Sao mesmo!")  # Fez comment
+
+        lp = list_all_comments_of_post(conn, id_post)
+        lu = list_all_comments_of_person(conn, viewer_id)
+
+        self.assertCountEqual(lp, lu)
+
+        remove_person_comment_post(conn, id_post, viewer_id)
+        lu = list_all_comments_of_person(conn, viewer_id)
+
+        self.assertEqual(0, len(lu))
+
 
 def run_sql_script(filename):
     global config
@@ -435,7 +548,7 @@ def run_sql_script(filename):
             [
                 config['MYSQL'],
                 '-u', config['USER'],
-                '-p' + config['PASS'],
+                #'-p' + config['PASS'],
                 '-h', config['HOST']
             ],
             stdin=f
@@ -451,6 +564,8 @@ def setUpModule():
 
 def tearDownModule():
     run_sql_script('make_birdbook.sql')
+    run_sql_script('delta_birdbook.sql')
+    run_sql_script('make_triggers.sql')
 
 
 if __name__ == '__main__':
