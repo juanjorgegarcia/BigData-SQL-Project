@@ -95,7 +95,7 @@ def delete_bird_of_person(conn, person_id, bird_name):
             'DELETE FROM person_favorites_bird WHERE person_id=%s AND bird_name=%s', (person_id, bird_name))
 
 
-def lists_birds_of_person(conn, person_id):
+def list_birds_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT bird_name FROM person_favorites_bird WHERE person_id=%s', (person_id))
@@ -104,7 +104,7 @@ def lists_birds_of_person(conn, person_id):
         return birds
 
 
-def lists_persons_of_bird(conn, bird_name):
+def list_persons_of_bird(conn, bird_name):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT person_id FROM person_favorites_bird WHERE bird_name=%s', (bird_name))
@@ -195,25 +195,23 @@ def delete_post_from_person(conn, person_id, post_id):
             'DELETE FROM person_make_post WHERE person_id=%s AND post_id=%s', (person_id, post_id))
 
 
-def lists_posts_of_person(conn, person_id):
+def list_posts_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
-            'SELECT post_id FROM post WHERE person_id=%s', (person_id))
+            'SELECT * FROM post WHERE person_id=%s', (person_id))
         res = cursor.fetchall()
-        posts = tuple(x[0] for x in res)
-        return posts
+        return res
 
 
-def lists_active_posts_of_person(conn, person_id):
+def list_active_posts_of_person(conn, person_id):
     with conn.cursor() as cursor:
         cursor.execute(
-            'SELECT post_id FROM post WHERE person_id=%s AND deletedAt IS NULL', (person_id))
+            'SELECT * FROM post WHERE person_id=%s AND deletedAt IS NULL ORDER BY (post_id) DESC', (person_id))
         res = cursor.fetchall()
-        posts = tuple(x[0] for x in res)
-        return posts
+        return res
 
 
-def lists_persons_from_post(conn, post_id):
+def list_persons_from_post(conn, post_id):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT person_id FROM person_make_post WHERE post_id=%s', (post_id))

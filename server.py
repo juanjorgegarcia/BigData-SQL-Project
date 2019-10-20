@@ -248,3 +248,27 @@ def update_post_comment(title: str, username: str, comment: str):
             return f"Nao existe uma pessoa com o username {username}"
     except:
         return f'Não posso atualizar o comentario do post com o titulo: {title}'
+
+
+@app.get("/user/comments")
+def read_posts_comments(username: str):
+    try:
+        person_id = find_person(conn, username)
+        if person_id:
+            return list_all_comments_of_person(conn, person_id)
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso listar todos os comentarios do usuario: {username}'
+
+
+@app.get("/user/posts")
+def read_user_posts(username: str):
+    try:
+        person_id = find_person(conn, username)
+        if person_id:
+            return list_active_posts_of_person(conn, person_id)
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso listar todos os posts do usuario: {username}'
