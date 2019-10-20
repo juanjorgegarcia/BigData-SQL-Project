@@ -229,3 +229,159 @@ def find_view(conn, person_id, post_id):
             return res[0]
         else:
             return None
+
+
+def add_post_refere_person(conn, post_id, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('INSERT INTO post_refere_person (post_id, person_id) VALUES (%s,%s)',
+                           (post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso inserir {post_id, person_id} na tabela post_refere_person')
+
+
+def remove_post_refere_person(conn, post_id, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE post_refere_person SET deletedAt = CURDATE(), WHERE post_id = %s and person_id = %s ',
+                           (post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso remover a referencia: {post_id, person_id} na tabela post_refere_person')
+
+
+def list_all_references_person(conn, post_id, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM post_refere_person WHERE deletedAt is NULL and person_id = %s ',
+                           (person_id))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas as referencias da pessoa: {person_id} na tabela post_refere_person')
+
+
+def list_all_references_post(conn, post_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM post_refere_person WHERE deletedAt is NULL and post_id = %s ',
+                           (post_id))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas as referencias do post: {post_id} na tabela post_refere_person')
+
+
+def add_person_comment_post(conn, post_id, person_id, comment):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('INSERT INTO person_comment_post (post_id ,person_id, comment) VALUES (%s,%s,%s)',
+                           (post_id, person_id, comment))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso inserir {post_id, person_id, comment} na tabela person_comment_person')
+
+
+def remove_person_comment_post(conn, post_id, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE person_comment_post SET deletedAt = CURDATE(), WHERE post_id = %s and person_id = %s ',
+                           (post_id, person_id))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso remover o comentario: {post_id, person_id} na tabela person_comment_post')
+
+
+def list_all_comments_of_person(conn, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM person_comment_post WHERE deletedAt is NULL and person_id = %s ',
+                           (person_id))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os comentarios da pessoa: {person_id} na tabela person_comment_post')
+
+
+def list_all_comments_of_post(conn, post_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM person_comment_post WHERE deletedAt is NULL and post_id = %s ',
+                           (post_id))
+            res = cursor.fetchall()
+            return res
+
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os comentarios do post: {post_id} na tabela person_comment_post')
+
+
+def add_post_refere_bird(conn, post_id, bird_name):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('INSERT INTO post_refere_bird (post_id, bird_name) VALUES (%s,%s)',
+                           (post_id, bird_name))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso inserir {post_id, bird_name} na tabela post_refere_bird')
+
+
+def remove_post_refere_bird(conn, post_id, bird_name):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('UPDATE post_refere_bird SET deletedAt = CURDATE() WHERE post_id = %s and bird_name = %s ',
+                           (post_id, bird_name))
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso remover a referencia: {post_id, bird_name} na tabela post_refere_bird')
+
+
+def list_all_references_of_bird(conn, bird_name):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM post_refere_bird WHERE deletedAt is NULL and bird_name = %s ',
+                           (bird_name))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas as referencias do passaro: {bird_name} na tabela post_refere_bird')
+
+
+def list_all_bird_references_of_post(conn, post_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('SELECT * FROM post_refere_bird WHERE deletedAt is NULL and post_id = %s ',
+                           (post_id))
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os passaros do post: {post_id} na tabela post_refere_bird')
+####
+
+#  Parser
+
+####
+
+
+def parser(character, text):
+    # return re.findall(r'\b[sS]\w+', text)
+    return [idx for idx in text.split() if idx.lower().startswith(character.lower())]
+
+
+def parse_and_refere(conn, content, post_id):
+    users_refered = parser("@", content)
+    birds_refered = parser("#", content)
+    for u in users_refered:
+        _id = find_person(conn, u)
+        add_post_refere_person(conn, post_id, _id)
+        print(u[1:])
+
+    for b in birds_refered:
+        add_post_refere_bird(conn, post_id, b)
+        print(b[1:])

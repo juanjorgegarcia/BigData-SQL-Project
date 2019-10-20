@@ -365,6 +365,68 @@ class TestProjeto(unittest.TestCase):
                 conn, "post do arthur"))):
             self.fail('View n criada')
 
+    def test_refere_person(self):
+        conn = self.__class__.connection
+        username = 'juanjorge3'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        add_person(conn, username, first_name, last_name, email, city)
+
+        username2 = 'arthurqmo3'
+        first_name2 = 'arthur'
+        last_name2 = 'folga'
+        email2 = 'arthurqmo@al.insper.edu.br'
+        city2 = 'sao paulo'
+
+        add_person(conn, username2, first_name2, last_name2, email2, city2)
+
+        poster_id = find_person(conn, username2)
+        referenced_id = find_person(conn, username)
+
+        add_post(conn, title="Post que referencia o juan", url="asasasa",
+                 content="Oiiii", person_id=poster_id)
+        id_post = find_post_id(conn, "Post que referencia o juan")
+
+        add_post_refere_person(conn, id_post, referenced_id)
+
+        references = list_all_references_post(conn, id_post)
+        self.assertEqual(len(references), 1)
+
+    def test_refere_bird(self):
+        conn = self.__class__.connection
+        username = 'juanjorge4'
+        first_name = 'juan'
+        last_name = 'jorge garcia'
+        email = 'juanjg@al.insper.edu.br'
+        city = 'sao jose do rio preto'
+
+        add_person(conn, username, first_name, last_name, email, city)
+        person_id = find_person(conn, username)
+
+        add_bird(conn, "calopsita")
+
+        add_post(conn, title="Adoro passaros!!", url="asasasa",
+                 content="Oiiii", person_id=person_id)
+        id_post = find_post_id(conn, "Adoro passaros!!")
+
+        add_post_refere_bird(conn, id_post, "calopsita")
+        references = list_all_references_of_bird(
+            conn, "calopsita")
+
+        # Checa referencias de "calopsita"
+        self.assertEqual(len(references), 1)
+        # Checa todas as referencias de passaros no psot especifico
+        self.assertEqual(
+            len(list_all_bird_references_of_post(conn, id_post)), 1)
+
+        remove_post_refere_bird(conn, id_post, "calopsita")
+        # Checa todas as referencias de passaros no psot especifico
+        self.assertEqual(
+            len(list_all_bird_references_of_post(conn, id_post)), 0)
+
 
 def run_sql_script(filename):
     global config

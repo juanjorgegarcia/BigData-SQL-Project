@@ -1,3 +1,5 @@
+use birdbook;
+
 DELIMITER //
 CREATE TRIGGER del_per_post
 BEFORE UPDATE ON person
@@ -19,7 +21,6 @@ END//
 
 DELIMITER ;
 
-DELIMITER ;
 
 DELIMITER //
 CREATE TRIGGER del_per_refere_per
