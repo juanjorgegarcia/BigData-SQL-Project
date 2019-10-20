@@ -49,7 +49,7 @@ CREATE TABLE person_favorites_bird (
 
 CREATE TABLE post (
   post_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  title VARCHAR(45) NOT NULL,
+  title VARCHAR(45) NOT NULL UNIQUE,
   url VARCHAR(45) ,
   content VARCHAR(255) NOT NULL,
   deletedAt datetime NULL,
