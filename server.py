@@ -165,13 +165,13 @@ def read_bird():
     except:
         return f'Não posso listar todos os passaros'
 
+
 @app.get("/bird/urls")
-def read_bird():
+def read_bird_url():
     try:
-        return list_birds(conn)
+        return list_bird_urls(conn)
     except:
         return f'Não posso listar todos os passaros'
-
 
 
 @app.post("/bird")
@@ -407,7 +407,7 @@ def add_user_bird(username: str, bird_name: str):
 
 
 @app.get("/user/votes")
-def read_user_birds(username: str):
+def read_user_votes(username: str):
     try:
         person_id = find_person(conn, username)
         if person_id:
@@ -420,11 +420,12 @@ def read_user_birds(username: str):
 
 @app.get("/popular/users/city")
 def read_popular_users_city():
-    try:
+    return list_popular_users_city(conn)
+    # try:
 
-        return list_popular_users_city(conn)
-    except:
-        return f'Não posso listar os usuarios mais populares de cada cidade '
+    #     return list_popular_users_city(conn)
+    # except:
+    #     return f'Não posso listar os usuarios mais populares de cada cidade '
 
 
 @app.get("/post/views")
@@ -440,7 +441,7 @@ def read_posts_views(title: str):
 
 
 @app.post("/post/view")
-def create_post_view(title: str, username: str, ip: str, browser: str):
+def create_post_view(title: str, username: str, ip: str, device: str, browser: str):
     try:
         post_id = find_post_id(conn, title)
         person_id = find_person(conn, username)
@@ -455,7 +456,7 @@ def create_post_view(title: str, username: str, ip: str, browser: str):
             return f"Nao existe uma pessoa com o username {username}"
 
     except:
-        return f'Não posso inserir o comentario {comment} do usuario: {username} no post: {title}'
+        return f'Não posso inserir a view do usuario: {username} no post: {title}'
 
 
 @app.delete("/post/view")
@@ -501,8 +502,8 @@ def read_user_references(username: str):
 
 
 @app.get("/devices/top")
-def read_user_references(username: str):
+def read_devices_top():
     try:
         return list_top_devices(conn)
     except:
-        return f'Não posso listar todos os top devices: {username}'
+        return f'Não posso listar todos os top devices'

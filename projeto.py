@@ -256,9 +256,9 @@ def list_post_views(conn, post_id):
     with conn.cursor() as cursor:
         cursor.execute(
             'SELECT * FROM person_view_post WHERE post_id = %s', (post_id))
-        res = cursor.fetchone()
+        res = cursor.fetchall()
         if res:
-            return res[0]
+            return res
         else:
             return None
 
@@ -535,7 +535,7 @@ def list_user_references(conn, person_id):
             return res
         except pymysql.err.IntegrityError as e:
             raise ValueError(
-                f'Não posso listar todas os passaros do post: {post_id} na tabela post_refere_bird')
+                f'Não posso listar todas as referencias')
 
 
 def list_top_devices(conn):
@@ -543,11 +543,13 @@ def list_top_devices(conn):
         try:
             cursor.execute('''
                 SELECT 
-                    COUNT(device), COUNT(browser)
+                    device, browser, COUNT(device)
                 FROM
                     person_view_post
                 WHERE
                     person_view_post.deletedAt is NULL
+                GROUP BY
+                    device, browser
    
                 ''')
             res = cursor.fetchall()
