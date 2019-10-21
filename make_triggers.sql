@@ -14,6 +14,13 @@ BEGIN
 		SET person_view_post.deletedAt =  CURDATE()
 		WHERE person_view_post.person_id =NEW.person_id;
         
+		UPDATE person_comment_post
+		SET person_comment_post.deletedAt =  CURDATE()
+		WHERE person_comment_post.person_id =NEW.person_id;
+        
+		UPDATE person_vote_post
+		SET person_vote_post.deletedAt =  CURDATE()
+		WHERE person_vote_post.person_id =NEW.person_id;
         
 	END IF;
         

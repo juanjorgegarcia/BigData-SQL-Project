@@ -298,7 +298,7 @@ def add_person_vote_post(conn, post_id, person_id, liked):
 def remove_person_vote_post(conn, post_id, person_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('UPDATE person_vote_post SET deletedAt = CURDATE(), WHERE post_id = %s and person_id = %s ',
+            cursor.execute('UPDATE person_vote_post SET deletedAt = CURDATE() WHERE post_id = %s and person_id = %s ',
                            (post_id, person_id))
         except pymysql.err.IntegrityError as e:
             raise ValueError(
@@ -330,7 +330,7 @@ def find_person_vote_post(conn, post_id, person_id):
 def list_all_votes_of_post(conn, post_id):
     with conn.cursor() as cursor:
         try:
-            cursor.execute('SELECT * FROM person_vote_post WHERE deletedAt is NULL and post_id = %s ',
+            cursor.execute('SELECT * from person_vote_post WHERE post_id = %s and deletedAt is NULL',
                            (post_id))
             res = cursor.fetchall()
             return res
@@ -449,6 +449,35 @@ def list_all_bird_references_of_post(conn, post_id):
         except pymysql.err.IntegrityError as e:
             raise ValueError(
                 f'Não posso listar todas os passaros do post: {post_id} na tabela post_refere_bird')
+
+
+def list_popular_users_city(conn):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('''
+                CREATE TEMPORARY TABLE popular_users_city
+                SELECT 
+                    person.person_id, person.username, person.city, COUNT(liked) as total_likes
+                FROM
+                    person
+                    INNER JOIN post using (person_id)
+                    INNER JOIN person_vote_post USING (post_id)
+                    
+                WHERE
+                    person_vote_post.deletedAt is NULL and
+                    post.deletedAt is NULL and
+                    person.is_deleted = 0
+                GROUP BY
+                    post.person_id, person.city
+                ORDER BY 
+                    total_likes DESC
+                ''')
+            cursor.execute('SELECT * FROM popular_users_city')
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar os usuarios mais populares de cada cidade')
 ####
 
 #  Parser

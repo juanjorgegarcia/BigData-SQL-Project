@@ -250,6 +250,73 @@ def update_post_comment(title: str, username: str, comment: str):
         return f'Não posso atualizar o comentario do post com o titulo: {title}'
 
 
+@app.get("/post/votes")
+def read_posts_votes(title: str):
+    try:
+        post_id = find_post_id(conn, title)
+        if post_id:
+            return list_all_votes_of_post(conn, post_id)
+        else:
+            return f"Nao existe um post com o titulo {title}"
+    except:
+        return f'Não posso listar todos os votos do post: {title}'
+
+
+@app.post("/post/vote")
+def create_post_vote(title: str, username: str, like: int):
+    try:
+        post_id = find_post_id(conn, title)
+        person_id = find_person(conn, username)
+        if person_id:
+            if post_id:
+                add_person_vote_post(conn, post_id, person_id, like)
+                conn.commit()
+                return f"Vote: {like} no Post: {title} foi adicionado pelo usuario {username}"
+            else:
+                return f"Nao existe um post com o titulo {title}"
+        else:
+            return f"Nao existe uma pessoa com o username {username}"
+
+    except:
+        return f'Não posso inserir o vote: {like} do usuario: {username} no post: {title}'
+
+
+@app.delete("/post/vote")
+def delete_post_vote(title: str, username: str):
+    try:
+        post_id = find_post_id(conn, title)
+        person_id = find_person(conn, username)
+        if person_id:
+            if post_id:
+                remove_person_vote_post(conn, post_id, person_id)
+                conn.commit()
+                return f"Vote no post: {title} foi removido pelo usuario {username}"
+            else:
+                return f"Nao existe um post com o titulo {title}"
+        else:
+            return f"Nao existe uma pessoa com o username {username}"
+    except:
+        return f'Não posso remover o comentario do post com o titulo: {title}'
+
+
+@app.put("/post/vote")
+def update_post_vote(title: str, username: str, like: str):
+    try:
+        post_id = find_post_id(conn, title)
+        person_id = find_person(conn, username)
+        if person_id:
+            if post_id:
+                update_person_vote_post(conn, post_id, person_id, like)
+                conn.commit()
+                return f"Vote do usuario: {username} no post: {title} foi atualizado para vote: {like}"
+            else:
+                return f"Nao existe um post com o titulo {title}"
+        else:
+            return f"Nao existe uma pessoa com o username {username}"
+    except:
+        return f'Não posso atualizar o comentario do post com o titulo: {title}'
+
+
 @app.get("/user/comments")
 def read_posts_comments(username: str):
     try:
@@ -272,3 +339,56 @@ def read_user_posts(username: str):
             return f"Nao existe um usuario com o username {username}"
     except:
         return f'Não posso listar todos os posts do usuario: {username}'
+
+
+@app.get("/user/birds")
+def read_user_birds(username: str):
+    try:
+        person_id = find_person(conn, username)
+        if person_id:
+            return list_birds_of_person(conn, person_id)
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso listar todos os passaros do usuario: {username}'
+
+
+@app.post("/user/birds")
+def add_user_bird(username: str, bird_name: str):
+    try:
+        person_id = find_person(conn, username)
+        bird = find_bird(conn, bird_name)
+        if person_id:
+            if bird:
+                add_bird_to_person(conn, person_id, bird_name)
+                conn.commit()
+
+                return f"Passaro: {bird} adicionado ao usuario {username}"
+            else:
+                return f"Nao existe um passaro com o {bird_name}"
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso adicionar o passaro: {bird_name} ao usuario: {username}'
+
+
+@app.get("/user/votes")
+def read_user_birds(username: str):
+    try:
+        person_id = find_person(conn, username)
+        if person_id:
+            return list_all_votes_of_person(conn, person_id)
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso listar todos os votes do usuario: {username}'
+
+
+@app.get("/popular/users")
+def read_popular_users():
+
+    try:
+
+        return list_popular_users_city(conn)
+    except:
+        return f'Não posso listar os usuarios mais populares de cada cidade '
