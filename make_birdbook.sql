@@ -74,12 +74,12 @@ CREATE TABLE post_refere_person (
 CREATE TABLE person_view_post (
   person_id SMALLINT UNSIGNED NOT NULL,
   post_id SMALLINT UNSIGNED NOT NULL,
-  ip INT UNSIGNED NOT NULL,
+  ip VARCHAR(55) NOT NULL,
   device VARCHAR(45) NOT NULL,
   browser VARCHAR(45) NOT NULL,
   deletedAt datetime NULL,
   instant TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY  (person_id, post_id),
+  PRIMARY KEY  (person_id, post_id,ip),
   CONSTRAINT fk_person_view_post_postid FOREIGN KEY (post_id) REFERENCES post (post_id) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_person_view_post_personid FOREIGN KEY (person_id) REFERENCES person (person_id) ON DELETE RESTRICT ON UPDATE CASCADE
 )ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
