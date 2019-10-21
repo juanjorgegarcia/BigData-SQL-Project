@@ -548,7 +548,7 @@ def run_sql_script(filename):
             [
                 config['MYSQL'],
                 '-u', config['USER'],
-                #'-p' + config['PASS'],
+                '-p' + config['PASS'],
                 '-h', config['HOST']
             ],
             stdin=f
