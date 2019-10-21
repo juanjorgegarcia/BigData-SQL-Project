@@ -241,6 +241,39 @@ def find_view(conn, person_id, post_id):
             return None
 
 
+def remove_view(conn, person_id, post_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'DELETE FROM person_view_post WHERE person_id=%s AND post_id=%s', (person_id, post_id))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+
+def list_post_views(conn, post_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'SELECT * FROM person_view_post WHERE post_id = %s', (post_id))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+
+def list_users_views(conn, person_id):
+    with conn.cursor() as cursor:
+        cursor.execute(
+            'SELECT * FROM person_view_post WHERE person_id = %s', (person_id))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+
 def add_post_refere_person(conn, post_id, person_id):
     with conn.cursor() as cursor:
         try:
@@ -478,6 +511,72 @@ def list_popular_users_city(conn):
         except pymysql.err.IntegrityError as e:
             raise ValueError(
                 f'Não posso listar os usuarios mais populares de cada cidade')
+
+
+def list_user_references(conn, person_id):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('''
+                SELECT 
+                    person.person_id as referenciador, post_refere_person.person_id as usuario_referenciado
+                FROM
+                    person
+                    INNER JOIN post using (person_id)
+                    INNER JOIN post_refere_person USING (post_id)
+            
+                WHERE
+                    post_refere_person.deletedAt is NULL and
+                    post.deletedAt is NULL and
+                    person.is_deleted = 0
+                    post.refere_person.person_id = %s
+   
+                ''', person_id)
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os passaros do post: {post_id} na tabela post_refere_bird')
+
+
+def list_top_devices(conn):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('''
+                SELECT 
+                    COUNT(device), COUNT(browser)
+                FROM
+                    person_view_post
+                WHERE
+                    person_view_post.deletedAt is NULL
+   
+                ''')
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar todas os top devices ')
+
+
+def list_bird_urls(conn):
+    with conn.cursor() as cursor:
+        try:
+            cursor.execute('''
+                SELECT 
+                    post_refere_bird.bird_name, post.url
+                FROM
+                    post_refere_bird 
+                    INNER JOIN post using (post_id)
+                WHERE
+                    person.deletedAt is NULL and
+                    post_refere_bird is NULL
+
+                ''')
+            res = cursor.fetchall()
+            return res
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(
+                f'Não posso listar as urls dos passaros ')
+
 ####
 
 #  Parser

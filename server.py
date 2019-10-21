@@ -157,6 +157,14 @@ def read_bird():
     except:
         return f'Não posso listar todos os passaros'
 
+@app.get("/bird/urls")
+def read_bird():
+    try:
+        return list_birds(conn)
+    except:
+        return f'Não posso listar todos os passaros'
+
+
 
 @app.post("/bird")
 def create_bird(bird: Bird):
@@ -384,11 +392,91 @@ def read_user_birds(username: str):
         return f'Não posso listar todos os votes do usuario: {username}'
 
 
-@app.get("/popular/users")
-def read_popular_users():
-
+@app.get("/popular/users/city")
+def read_popular_users_city():
     try:
 
         return list_popular_users_city(conn)
     except:
         return f'Não posso listar os usuarios mais populares de cada cidade '
+
+
+@app.get("/post/views")
+def read_posts_views(title: str):
+    try:
+        post_id = find_post_id(conn, title)
+        if post_id:
+            return list_post_views(conn, post_id)
+        else:
+            return f"Nao existe um post com o titulo {title}"
+    except:
+        return f'Não posso listar todos os views do post: {title}'
+
+
+@app.post("/post/view")
+def create_post_view(title: str, username: str, ip: str, browser: str):
+    try:
+        post_id = find_post_id(conn, title)
+        person_id = find_person(conn, username)
+        if person_id:
+            if post_id:
+                add_view(conn, post_id, post_id, ip, device, browser)
+                conn.commit()
+                return f"Post: {title} foi visto pelo usuario {username}"
+            else:
+                return f"Nao existe um post com o titulo {title}"
+        else:
+            return f"Nao existe uma pessoa com o username {username}"
+
+    except:
+        return f'Não posso inserir o comentario {comment} do usuario: {username} no post: {title}'
+
+
+@app.delete("/post/view")
+def delete_post_view(title: str, username: str):
+    try:
+        post_id = find_post_id(conn, title)
+        person_id = find_person(conn, username)
+        if person_id:
+            if post_id:
+                remove_view(conn, person_id, post_id)
+                conn.commit()
+                return f"View no post: {title} foi removido pelo usuario {username}"
+            else:
+                return f"Nao existe um post com o titulo {title}"
+        else:
+            return f"Nao existe uma pessoa com o username {username}"
+    except:
+        return f'Não posso remover o comentario do post com o titulo: {title}'
+
+
+@app.get("/user/views")
+def read_user_views(username: str):
+    try:
+        person_id = find_person(conn, username)
+        if person_id:
+            return list_users_views(conn, person_id)
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso listar todos os views do usuario: {username}'
+
+
+@app.get("/user/references")
+def read_user_references(username: str):
+    try:
+        person_id = find_person(conn, username)
+        if person_id:
+            return list_user_references(conn, person_id)
+        else:
+            return f"Nao existe um usuario com o username {username}"
+    except:
+        return f'Não posso listar todos as marcacoes do usuario: {username}'
+
+
+@app.get("/devices/top")
+def read_user_references(username: str):
+    try:
+        return list_top_devices(conn)
+    except:
+        return f'Não posso listar todos os top devices: {username}'
