@@ -4,6 +4,8 @@ Megadados - Insper
 Arthur Olga,
 Juan Garcia
 
+## Creating the Database
+Run ```make_birdbook.sql```, ```delta_birdbook.sql``` and ```make_triggers.sql```
 
 ### Entity-Relationshop Model
 <img src="EntityRelationModel.png" >
