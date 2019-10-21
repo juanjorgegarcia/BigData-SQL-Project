@@ -114,7 +114,15 @@ def create_post(post: Post):
         if person_id:
             add_post(conn, post.title, post.url, post.content, person_id)
             conn.commit()
-            return f"Post: {post.title} foi adicionado pelo usuario {post.username}"
+            # Acha o id do post
+            _id = find_post_id(conn, post.title)
+            # Faz o parser do content do post e cria os referes (#,@)
+            try:
+                parse_and_refere(conn, str(post.content), _id)
+                conn.commit()
+                return f"Post: {post.title} foi adicionado pelo usuario {post.username}"
+            except:
+                return f"Nao foi possivel adicionar as marcacoes no post"
         else:
             return f"Nao existe uma pessoa com o usernmae {post.username}"
 
@@ -180,6 +188,24 @@ def delete_bird(bird: Bird):
             return f"Passaro: {bird.bird_name} nao existe"
     except:
         return f'Não posso remover o passaro: {bird.bird_name}'
+
+
+@app.get("/post/birds")
+def read_post_refere_bird(title: str):
+    try:
+        post_id = find_post_id(conn, title)
+        return list_all_bird_references_of_post(conn, post_id)
+    except:
+        return f'Não posso listar todos os birds do post'
+
+
+@app.get("/post/persons")
+def read_post_refere_person(title: str):
+    try:
+        post_id = find_post_id(conn, title)
+        return list_all_bird_references_of_post(conn, post_id)
+    except:
+        return f'Não posso listar todos os birds do post'
 
 
 @app.get("/post/comments")

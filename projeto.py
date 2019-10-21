@@ -491,12 +491,19 @@ def parser(character, text):
 
 
 def parse_and_refere(conn, content, post_id):
+
     users_refered = parser("@", content)
     birds_refered = parser("#", content)
 
     for u in users_refered:
         _id = find_person(conn, u[1:])
-        add_post_refere_person(conn, post_id, _id)
+        try:
+            add_post_refere_person(conn, post_id, _id)
+        except:
+            print("Nao seu pra adicionar "+_id+u[1:])
 
     for b in birds_refered:
-        add_post_refere_bird(conn, post_id, b[1:])
+        try:
+            add_post_refere_bird(conn, post_id, b[1:])
+        except:
+            print("Nao seu pra adicionar "+b[1:])
